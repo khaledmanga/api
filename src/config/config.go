@@ -37,6 +37,7 @@ type DatabaseConfig struct {
 	Password string `yaml:"password"`
 	Name     string `yaml:"name"`
 	TLS      bool   `yaml:"tls"`
+	TLSCA    string `yaml:"tls_ca"`
 }
 
 type PasswordConfig struct {
@@ -49,6 +50,7 @@ type RedisConfig struct {
 	Password string `yaml:"password"`
 	DB       int    `yaml:"db"`
 	TLS      bool   `yaml:"tls"`
+	TLSCA    string `yaml:"tls_ca"`
 }
 
 func LoadConfig() (*Config, error) {
@@ -79,8 +81,10 @@ func applyEnvironment(configuration *Config) error {
 	setStringFromEnv("DB_USER", &configuration.Database.User)
 	setStringFromEnv("DB_PASSWORD", &configuration.Database.Password)
 	setStringFromEnv("DB_NAME", &configuration.Database.Name)
+	setStringFromEnv("DB_TLS_CA", &configuration.Database.TLSCA)
 	setStringFromEnv("REDIS_HOST", &configuration.Redis.Host)
 	setStringFromEnv("REDIS_PASSWORD", &configuration.Redis.Password)
+	setStringFromEnv("REDIS_TLS_CA", &configuration.Redis.TLSCA)
 
 	for _, override := range []struct {
 		key    string

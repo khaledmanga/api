@@ -21,7 +21,19 @@ func NewRedisClient(redisConfig *RedisConfig) (*RedisClient, error) {
 		DB:       redisConfig.DB,
 	}
 	if redisConfig.TLS {
-		options.TLSConfig = &tls.Config{MinVersion: tls.VersionTLS12}
+		options.TLSConfig = &tls.Config{
+			MinVersion: tls.VersionTLS12,
+			ServerName: redisConfig.Host,
+		}
+		if redisConfig.TLSCA != "" {
+			rootCAs, err := certificatePool(redisConfig.TLSCA)
+			if err != nil {
+				return nil, fmt.Errorf("configure Redis TLS CA: %w", err)
+			}
+			options.TLSConfig.RootCAs = rootCAs
+		}
+	} else if redisConfig.TLSCA != "" {
+		return nil, fmt.Errorf("REDIS_TLS_CA requires REDIS_TLS=true")
 	}
 	client := redis.NewClient(options)
 

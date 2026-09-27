@@ -80,12 +80,14 @@ Invalid non-empty boolean environment values also cause startup to fail.
 | `DB_PASSWORD` | `database.password` | string |
 | `DB_NAME` | `database.name` | string |
 | `DB_TLS` | `database.tls` | boolean |
+| `DB_TLS_CA` | `database.tls_ca` | PEM CA certificate |
 | `PASSWORD_COST` | `password.cost` | integer |
 | `REDIS_HOST` | `redis.host` | string |
 | `REDIS_PORT` | `redis.port` | integer |
 | `REDIS_PASSWORD` | `redis.password` | string |
 | `REDIS_DB` | `redis.db` | integer |
 | `REDIS_TLS` | `redis.tls` | boolean |
+| `REDIS_TLS_CA` | `redis.tls_ca` | PEM CA certificate |
 
 For local runs, export the variables from `.env` before starting the API; the application does not
 load `.env` automatically. Vercel and other hosting platforms expose configured environment variables
@@ -108,11 +110,18 @@ credentials; do not commit them):
 | `DB_PASSWORD` | Aiven password |
 | `DB_NAME` | `defaultdb` |
 | `DB_TLS` | `true` |
+| `DB_TLS_CA` | CA certificate PEM from the Aiven service |
 | `CORS_ALLOWED_ORIGINS` | Exact deployed frontend origin, including `https://` |
 
 The API also requires a reachable Redis service for sessions. Configure `REDIS_HOST`,
-`REDIS_PORT`, `REDIS_PASSWORD`, and `REDIS_TLS` from a managed Redis provider; the server will
-fail during startup if Redis cannot be reached.
+`REDIS_PORT`, `REDIS_PASSWORD`, and `REDIS_TLS` from a managed Redis provider. If that service
+uses a private CA, set `REDIS_TLS_CA` to its CA certificate PEM as well. The server will fail during
+startup if Redis cannot be reached or its certificate cannot be verified.
+
+Paste the provider's CA certificate into the corresponding Vercel environment variable, preserving
+the PEM header and footer. For a single-line value, represent line breaks as `\n`; the application
+accepts either real line breaks or escaped `\n`. TLS certificate verification stays enabled, including
+hostname verification. Do not work around certificate errors by disabling verification.
 
 Deploy the React app as a second Vercel project with the project root set to `react`. Set
 `VITE_API_URL` to the deployed API's base URL ending in `/api`, for example
