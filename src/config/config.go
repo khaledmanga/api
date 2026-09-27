@@ -126,12 +126,12 @@ func applyEnvironment(configuration *Config) error {
 	}
 
 	switch strings.ToLower(strings.TrimSpace(configuration.SessionCookieSameSite)) {
-	case "", "strict":
-		configuration.SessionCookieSameSite = "Strict"
+	case "", "none":
+		configuration.SessionCookieSameSite = "None"
 	case "lax":
 		configuration.SessionCookieSameSite = "Lax"
-	case "none":
-		configuration.SessionCookieSameSite = "None"
+	case "strict":
+		configuration.SessionCookieSameSite = "Strict"
 	default:
 		return fmt.Errorf("invalid SESSION_COOKIE_SAME_SITE: must be Strict, Lax, or None")
 	}

@@ -60,15 +60,15 @@ func TestApplyEnvironmentParsesSessionCookieSameSite(t *testing.T) {
 	}
 }
 
-func TestApplyEnvironmentDefaultsSessionCookieSameSiteToStrict(t *testing.T) {
+func TestApplyEnvironmentDefaultsSessionCookieSameSiteToNone(t *testing.T) {
 	t.Setenv("SESSION_COOKIE_SAME_SITE", "")
 
 	cfg := &Config{}
 	if err := applyEnvironment(cfg); err != nil {
 		t.Fatalf("apply environment: %v", err)
 	}
-	if cfg.SessionCookieSameSite != "Strict" {
-		t.Fatalf("SameSite = %q, want Strict", cfg.SessionCookieSameSite)
+	if cfg.SessionCookieSameSite != "None" {
+		t.Fatalf("SameSite = %q, want None", cfg.SessionCookieSameSite)
 	}
 }
 
