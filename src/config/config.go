@@ -36,6 +36,7 @@ type DatabaseConfig struct {
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
 	Name     string `yaml:"name"`
+	TLS      bool   `yaml:"tls"`
 }
 
 type PasswordConfig struct {
@@ -47,6 +48,7 @@ type RedisConfig struct {
 	Port     int    `yaml:"port"`
 	Password string `yaml:"password"`
 	DB       int    `yaml:"db"`
+	TLS      bool   `yaml:"tls"`
 }
 
 func LoadConfig() (*Config, error) {
@@ -82,6 +84,18 @@ func applyEnvironment(configuration *Config) error {
 
 	for _, override := range []struct {
 		key    string
+		target *bool
+	}{
+		{"DB_TLS", &configuration.Database.TLS},
+		{"REDIS_TLS", &configuration.Redis.TLS},
+	} {
+		if err := setBoolFromEnv(override.key, override.target); err != nil {
+			return err
+		}
+	}
+
+	for _, override := range []struct {
+		key    string
 		target *int
 	}{
 		{"SERVER_PORT", &configuration.Server.Port},
@@ -91,6 +105,12 @@ func applyEnvironment(configuration *Config) error {
 		{"REDIS_DB", &configuration.Redis.DB},
 	} {
 		if err := setIntFromEnv(override.key, override.target); err != nil {
+			return err
+		}
+	}
+	serverPort, serverPortSet := os.LookupEnv("SERVER_PORT")
+	if !serverPortSet || serverPort == "" {
+		if err := setIntFromEnv("PORT", &configuration.Server.Port); err != nil {
 			return err
 		}
 	}
@@ -113,6 +133,19 @@ func setIntFromEnv(key string, target *int) error {
 		return nil
 	}
 	parsed, err := strconv.Atoi(strings.TrimSpace(value))
+	if err != nil {
+		return fmt.Errorf("parse %s: %w", key, err)
+	}
+	*target = parsed
+	return nil
+}
+
+func setBoolFromEnv(key string, target *bool) error {
+	value, ok := os.LookupEnv(key)
+	if !ok || value == "" {
+		return nil
+	}
+	parsed, err := strconv.ParseBool(strings.TrimSpace(value))
 	if err != nil {
 		return fmt.Errorf("parse %s: %w", key, err)
 	}

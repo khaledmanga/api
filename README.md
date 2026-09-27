@@ -67,6 +67,7 @@ nested YAML fields, so production settings can be supplied through the hosting p
 committing credentials. If the YAML file is missing, configuration starts empty and environment
 variables can provide the settings instead. Non-empty environment values override YAML. Malformed YAML
 or invalid non-empty integer environment values cause startup to fail with an error.
+Invalid non-empty boolean environment values also cause startup to fail.
 
 | Environment variable | Config field | Type |
 | --- | --- | --- |
@@ -78,16 +79,45 @@ or invalid non-empty integer environment values cause startup to fail with an er
 | `DB_USER` | `database.user` | string |
 | `DB_PASSWORD` | `database.password` | string |
 | `DB_NAME` | `database.name` | string |
+| `DB_TLS` | `database.tls` | boolean |
 | `PASSWORD_COST` | `password.cost` | integer |
 | `REDIS_HOST` | `redis.host` | string |
 | `REDIS_PORT` | `redis.port` | integer |
 | `REDIS_PASSWORD` | `redis.password` | string |
 | `REDIS_DB` | `redis.db` | integer |
+| `REDIS_TLS` | `redis.tls` | boolean |
 
 For local runs, export the variables from `.env` before starting the API; the application does not
 load `.env` automatically. Vercel and other hosting platforms expose configured environment variables
-to the application automatically. Set `SERVER_HOST` to `0.0.0.0` in deployments that require binding
-to all network interfaces. Comma-separated CORS origins are trimmed around each origin.
+to the application automatically. `PORT` is used as the server port when `SERVER_PORT` is not set.
+Set `SERVER_HOST` to `0.0.0.0` in deployments that require binding to all network interfaces.
+Comma-separated CORS origins are trimmed around each origin.
+
+## Deploy on Vercel with Aiven MySQL
+
+Deploy the API as its own Vercel project with the project root set to `api` and the Go framework
+preset. Configure these environment variables in Vercel (use the Aiven service's current
+credentials; do not commit them):
+
+| Variable | Value |
+| --- | --- |
+| `SERVER_HOST` | `0.0.0.0` |
+| `DB_HOST` | Aiven hostname |
+| `DB_PORT` | Aiven port |
+| `DB_USER` | Aiven username |
+| `DB_PASSWORD` | Aiven password |
+| `DB_NAME` | `defaultdb` |
+| `DB_TLS` | `true` |
+| `CORS_ALLOWED_ORIGINS` | Exact deployed frontend origin, including `https://` |
+
+The API also requires a reachable Redis service for sessions. Configure `REDIS_HOST`,
+`REDIS_PORT`, `REDIS_PASSWORD`, and `REDIS_TLS` from a managed Redis provider; the server will
+fail during startup if Redis cannot be reached.
+
+Deploy the React app as a second Vercel project with the project root set to `react`. Set
+`VITE_API_URL` to the deployed API's base URL ending in `/api`, for example
+`https://your-api.vercel.app/api`. This is a frontend build-time variable, so redeploy the
+frontend after changing it. Do not use `localhost` as the deployed API URL.
 
 ## Standard schema change workflow
 

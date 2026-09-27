@@ -48,13 +48,18 @@ func NewSQLDB(cfg *DatabaseConfig) (*sql.DB, error) {
 }
 
 func mysqlDSN(cfg *DatabaseConfig) string {
+	tlsOption := ""
+	if cfg.TLS {
+		tlsOption = "&tls=true"
+	}
 	return fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/%s?parseTime=true",
+		"%s:%s@tcp(%s:%d)/%s?parseTime=true%s",
 		cfg.User,
 		cfg.Password,
 		cfg.Host,
 		cfg.Port,
 		cfg.Name,
+		tlsOption,
 	)
 }
 

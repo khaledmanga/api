@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"strconv"
 	"time"
@@ -14,11 +15,15 @@ type RedisClient struct {
 }
 
 func NewRedisClient(redisConfig *RedisConfig) (*RedisClient, error) {
-	client := redis.NewClient(&redis.Options{
+	options := &redis.Options{
 		Addr:     redisConfig.Host + ":" + strconv.Itoa(redisConfig.Port),
 		Password: redisConfig.Password,
 		DB:       redisConfig.DB,
-	})
+	}
+	if redisConfig.TLS {
+		options.TLSConfig = &tls.Config{MinVersion: tls.VersionTLS12}
+	}
+	client := redis.NewClient(options)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
