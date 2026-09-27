@@ -1,0 +1,24 @@
+# Local environment configuration
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Go build and test artifacts
+/bin/
+/dist/
+/coverage/
+*.exe
+*.test
+*.out
+
+# Local tools and editor files
+/atlas
+/atlas.exe
+.idea/
+*.swp
+*.swo
+
+# Operating system files
+.DS_Store
+Thumbs.db

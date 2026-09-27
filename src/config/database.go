@@ -1,11 +1,14 @@
-package database
+package config
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
+	"time"
 
-	"entgo.io/ent"
+	"api/src/ent"
 	"entgo.io/ent/dialect"
-	"github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type DatabaseStrategy interface {
@@ -13,26 +16,46 @@ type DatabaseStrategy interface {
 }
 
 type MySQLStrategy struct {
-	cfg *config.Config
+	cfg *DatabaseConfig
 }
 
-func NewMySQLStrategy(cfg *config.Config) *MySQLStrategy {
+func NewMySQLStrategy(cfg *DatabaseConfig) *MySQLStrategy {
 	return &MySQLStrategy{
 		cfg: cfg,
 	}
 }
 
 func (s *MySQLStrategy) Connect() (*ent.Client, error) {
-	dsn := fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/%s?parseTime=True",
-		s.cfg.Database.User,
-		s.cfg.Database.Password,
-		s.cfg.Database.Host,
-		s.cfg.Database.Port,
-		s.cfg.Database.Name,
-	)
+	return ent.Open(dialect.MySQL, mysqlDSN(s.cfg))
+}
 
-	return ent.Open(dialect.MySQL, dsn)
+func NewSQLDB(cfg *DatabaseConfig) (*sql.DB, error) {
+	db, err := sql.Open("mysql", mysqlDSN(cfg))
+	if err != nil {
+		return nil, err
+	}
+	db.SetConnMaxLifetime(5 * time.Minute)
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(25)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := db.PingContext(ctx); err != nil {
+		db.Close()
+		return nil, err
+	}
+	return db, nil
+}
+
+func mysqlDSN(cfg *DatabaseConfig) string {
+	return fmt.Sprintf(
+		"%s:%s@tcp(%s:%d)/%s?parseTime=true",
+		cfg.User,
+		cfg.Password,
+		cfg.Host,
+		cfg.Port,
+		cfg.Name,
+	)
 }
 
 type Database struct {

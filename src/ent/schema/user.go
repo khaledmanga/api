@@ -19,8 +19,9 @@ func (User) Fields() []ent.Field {
 		field.String("email"),
 		field.String("username"),
 		field.String("password"),
-		field.String("role").GoType(constants.UserRole(0)).Default(int(constants.USER)),
-		field.String("state").GoType(constants.UserState(0)).Default(int(constants.PENDING)),
+		field.String("phone_number").Optional().Nillable(),
+		field.Int("role").GoType(constants.UserRole(0)).Default(int(constants.USER)),
+		field.Int("state").GoType(constants.UserState(0)).Default(int(constants.PENDING)),
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}

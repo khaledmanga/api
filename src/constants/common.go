@@ -4,7 +4,7 @@ type UserRole int
 
 const (
 	ADMIN UserRole = iota
-	USER  UserRole
+	USER
 )
 
 func (r UserRole) String() string {
@@ -14,10 +14,10 @@ func (r UserRole) String() string {
 type UserState int
 
 const (
-	PEDNING  UserState = iota
-	ACTIVE   UserState
-	INACTIVE UserState
-	BANNED   UserState
+	PENDING UserState = iota
+	ACTIVE
+	INACTIVE
+	BANNED
 )
 
 func (s UserState) String() string {
