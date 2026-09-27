@@ -74,6 +74,7 @@ Invalid non-empty boolean environment values also cause startup to fail.
 | `SERVER_HOST` | `server.host` | string |
 | `SERVER_PORT` | `server.port` | integer |
 | `CORS_ALLOWED_ORIGINS` | `cors.allowed_origins` | comma-separated origins |
+| `SESSION_COOKIE_SAME_SITE` | `session_cookie_same_site` | `Strict`, `Lax`, or `None` |
 | `DB_HOST` | `database.host` | string |
 | `DB_PORT` | `database.port` | integer |
 | `DB_USER` | `database.user` | string |
@@ -127,6 +128,15 @@ Deploy the React app as a second Vercel project with the project root set to `re
 `VITE_API_URL` to the deployed API's base URL ending in `/api`, for example
 `https://your-api.vercel.app/api`. This is a frontend build-time variable, so redeploy the
 frontend after changing it. Do not use `localhost` as the deployed API URL.
+
+The session cookie defaults to `SameSite=Strict`. If the frontend and API are on different
+sites (for example, separate `*.vercel.app` domains), set `SESSION_COOKIE_SAME_SITE=None`;
+the cookie is already marked `Secure`. Browsers may block cross-site cookies as third-party
+cookies, so the more reliable production setup is to use frontend and API custom domains under
+the same registrable domain (for example, `app.example.com` and `api.example.com`) and keep
+`SESSION_COOKIE_SAME_SITE=Strict`. In either setup, verify the `/api/auth/me` request in the
+browser Network panel includes `Cookie: session=...`; seeing the cookie in storage alone does
+not mean the browser sent it.
 
 ## Standard schema change workflow
 

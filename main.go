@@ -78,6 +78,7 @@ func run() error {
 		mapper.NewUserMapper(),
 		authService,
 		redisClient,
+		cfg.SessionCookieSameSite,
 	)
 	postRepository := repository.NewPostRepository(sqlDB)
 	likeRepository := repository.NewLikeRepository(sqlDB)

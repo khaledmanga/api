@@ -7,6 +7,8 @@ cors:
     - http://localhost:3000
     - http://localhost:5173
 
+session_cookie_same_site: Strict
+
 database:
   host: 127.0.0.1
   port: 3306

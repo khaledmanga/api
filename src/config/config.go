@@ -14,11 +14,12 @@ import (
 const configFilePath = "src/config/config.yml"
 
 type Config struct {
-	Server   ServerConfig   `yaml:"server"`
-	Database DatabaseConfig `yaml:"database"`
-	Password PasswordConfig `yaml:"password"`
-	Redis    RedisConfig    `yaml:"redis"`
-	CORS     CORSConfig     `yaml:"cors"`
+	Server               ServerConfig   `yaml:"server"`
+	Database             DatabaseConfig `yaml:"database"`
+	Password             PasswordConfig `yaml:"password"`
+	Redis                RedisConfig    `yaml:"redis"`
+	CORS                 CORSConfig     `yaml:"cors"`
+	SessionCookieSameSite string         `yaml:"session_cookie_same_site"`
 }
 
 type CORSConfig struct {
@@ -77,6 +78,7 @@ func loadConfig(path string) (*Config, error) {
 
 func applyEnvironment(configuration *Config) error {
 	setStringFromEnv("SERVER_HOST", &configuration.Server.Host)
+	setStringFromEnv("SESSION_COOKIE_SAME_SITE", &configuration.SessionCookieSameSite)
 	setStringFromEnv("DB_HOST", &configuration.Database.Host)
 	setStringFromEnv("DB_USER", &configuration.Database.User)
 	setStringFromEnv("DB_PASSWORD", &configuration.Database.Password)
@@ -121,6 +123,17 @@ func applyEnvironment(configuration *Config) error {
 
 	if origins, ok := os.LookupEnv("CORS_ALLOWED_ORIGINS"); ok && origins != "" {
 		configuration.CORS.AllowedOrigins = splitEnvironmentList(origins)
+	}
+
+	switch strings.ToLower(strings.TrimSpace(configuration.SessionCookieSameSite)) {
+	case "", "strict":
+		configuration.SessionCookieSameSite = "Strict"
+	case "lax":
+		configuration.SessionCookieSameSite = "Lax"
+	case "none":
+		configuration.SessionCookieSameSite = "None"
+	default:
+		return fmt.Errorf("invalid SESSION_COOKIE_SAME_SITE: must be Strict, Lax, or None")
 	}
 	return nil
 }

@@ -22,20 +22,23 @@ import (
 const sessionLifetime = 7 * 24 * time.Hour
 
 type AuthHandler struct {
-	mapper      *mapper.UserMapper
-	authService  *services.AuthService
-	redisClient *config.RedisClient
+	mapper                *mapper.UserMapper
+	authService           *services.AuthService
+	redisClient           *config.RedisClient
+	sessionCookieSameSite string
 }
 
 func NewAuthHandler(
 	mapper *mapper.UserMapper,
 	authService *services.AuthService,
 	redisClient *config.RedisClient,
+	sessionCookieSameSite string,
 ) *AuthHandler {
 	return &AuthHandler{
-		mapper:      mapper,
-		authService: authService,
-		redisClient: redisClient,
+		mapper:                mapper,
+		authService:           authService,
+		redisClient:           redisClient,
+		sessionCookieSameSite: sessionCookieSameSite,
 	}
 }
 
@@ -49,7 +52,7 @@ func generateSessionToken() (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-func setCookie(c fiber.Ctx, name, value string, maxAge int) {
+func setCookie(c fiber.Ctx, name, value string, maxAge int, sameSite string) {
 	c.Cookie(&fiber.Cookie{
 		Name:     name,
 		Value:    value,
@@ -57,7 +60,7 @@ func setCookie(c fiber.Ctx, name, value string, maxAge int) {
 		MaxAge:   maxAge,
 		HTTPOnly: true,
 		Secure:   true,
-		SameSite: fiber.CookieSameSiteStrictMode,
+		SameSite: sameSite,
 	})
 }
 
@@ -69,7 +72,13 @@ func (h *AuthHandler) createSession(c fiber.Ctx, userID int) error {
 	if err := h.redisClient.Set(c.Context(), token, userID, sessionLifetime); err != nil {
 		return fmt.Errorf("persist session: %w", err)
 	}
-	setCookie(c, "session", token, int(sessionLifetime.Seconds()))
+	setCookie(
+		c,
+		"session",
+		token,
+		int(sessionLifetime.Seconds()),
+		h.sessionCookieSameSite,
+	)
 	return nil
 }
 
@@ -160,7 +169,7 @@ func (h *AuthHandler) Logout(c fiber.Ctx) error {
 		MaxAge:   -1,
 		HTTPOnly: true,
 		Secure:   true,
-		SameSite: fiber.CookieSameSiteStrictMode,
+		SameSite: h.sessionCookieSameSite,
 	})
 	return c.SendStatus(fiber.StatusNoContent)
 }

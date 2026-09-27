@@ -48,6 +48,39 @@ func TestApplyEnvironmentRejectsInvalidTLSFlag(t *testing.T) {
 	}
 }
 
+func TestApplyEnvironmentParsesSessionCookieSameSite(t *testing.T) {
+	t.Setenv("SESSION_COOKIE_SAME_SITE", " none ")
+
+	cfg := &Config{}
+	if err := applyEnvironment(cfg); err != nil {
+		t.Fatalf("apply environment: %v", err)
+	}
+	if cfg.SessionCookieSameSite != "None" {
+		t.Fatalf("SameSite = %q, want None", cfg.SessionCookieSameSite)
+	}
+}
+
+func TestApplyEnvironmentDefaultsSessionCookieSameSiteToStrict(t *testing.T) {
+	t.Setenv("SESSION_COOKIE_SAME_SITE", "")
+
+	cfg := &Config{}
+	if err := applyEnvironment(cfg); err != nil {
+		t.Fatalf("apply environment: %v", err)
+	}
+	if cfg.SessionCookieSameSite != "Strict" {
+		t.Fatalf("SameSite = %q, want Strict", cfg.SessionCookieSameSite)
+	}
+}
+
+func TestApplyEnvironmentRejectsInvalidSessionCookieSameSite(t *testing.T) {
+	t.Setenv("SESSION_COOKIE_SAME_SITE", "unsafe")
+
+	err := applyEnvironment(&Config{})
+	if err == nil || !strings.Contains(err.Error(), "SESSION_COOKIE_SAME_SITE") {
+		t.Fatalf("error = %v, want SESSION_COOKIE_SAME_SITE validation error", err)
+	}
+}
+
 func TestMySQLDSNEnablesTLSWhenConfigured(t *testing.T) {
 	dsn, err := mysqlDSN(&DatabaseConfig{
 		Host: "mysql.example.com",
