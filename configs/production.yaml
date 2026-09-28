@@ -1,0 +1,28 @@
+server:
+  host: localhost
+  port: 8080
+
+cors:
+  allowed_origins:
+    - http://localhost:3000
+    - http://localhost:5173
+
+session_cookie_same_site: None
+
+database:
+  host: 127.0.0.1
+  port: 3306
+  user: kyoani_user
+  password: userpassword
+  name: kyoani_db
+  tls: false
+
+password:
+  cost: 12
+  
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+  db: 0
+  tls: false

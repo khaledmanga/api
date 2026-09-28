@@ -1,5 +1,5 @@
 env "local" {
-  src = "ent://src/ent/schema"
+  src = "ent://ent/schema"
   dev = "docker://mysql/8/dev"
   url = getenv("ATLAS_DB_URL")
 

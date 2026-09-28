@@ -1,0 +1,33 @@
+package schema
+
+import (
+	"entgo.io/ent"
+	"entgo.io/ent/schema/field"
+	"time"
+
+	"api/common"
+)
+
+// User holds the schema definition for the User entity.
+type User struct {
+	ent.Schema
+}
+
+// Fields of the User.
+func (User) Fields() []ent.Field {
+	return []ent.Field{
+		field.String("email"),
+		field.String("username"),
+		field.String("password"),
+		field.String("phone_number").Optional().Nillable(),
+		field.Int("role").GoType(common.UserRole(0)).Default(int(common.USER)),
+		field.Int("state").GoType(common.UserState(0)).Default(int(common.PENDING)),
+		field.Time("created_at").Default(time.Now),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
+	}
+}
+
+// Edges of the User.
+func (User) Edges() []ent.Edge {
+	return nil
+}

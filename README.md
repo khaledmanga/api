@@ -1,6 +1,6 @@
 # API
 
-This project uses Ent schemas in `src/ent/schema`, MySQL 8, and Atlas versioned migrations in `migrations/`.
+This project uses Ent schemas in `ent/schema`, MySQL 8, and Atlas versioned migrations in `migrations/`.
 Migration files and `migrations/atlas.sum` must be committed together. Never edit a migration after it has
 been applied to production; create a new migration to correct or reverse a change.
 
@@ -62,7 +62,7 @@ The actual URL is read from `ATLAS_DB_URL`; no database credentials are stored i
 
 ## Configure the application
 
-The API loads `src/config/config.yml` when present. Environment variables override the corresponding
+The API loads `configs/config.yaml` when present. Environment variables override the corresponding
 nested YAML fields, so production settings can be supplied through the hosting provider without
 committing credentials. If the YAML file is missing, configuration starts empty and environment
 variables can provide the settings instead. Non-empty environment values override YAML. Malformed YAML
@@ -139,8 +139,8 @@ same-origin proxy.
 
 ## Standard schema change workflow
 
-1. Edit a schema under `src/ent/schema/*.go`.
-2. Regenerate Ent code: `go generate ./src/ent`.
+1. Edit a schema under `ent/schema/*.go`.
+2. Regenerate Ent code: `go generate ./ent`.
 3. Create a versioned SQL migration: `make migrate-diff name=add_user_phone_number`.
 4. Review the generated SQL carefully, especially `ALTER`, `DROP`, nullability, and data-preservation behavior.
 5. Commit the Ent schema/code, migration SQL, and `migrations/atlas.sum` together. Do not rewrite a migration
@@ -161,7 +161,7 @@ production environments.
 The `User` Ent schema now declares `phone_number` as nullable. After updating the schema:
 
 ```sh
-go generate ./src/ent
+go generate ./ent
 make migrate-diff name=add_user_phone_number
 ```
 
